@@ -5,17 +5,13 @@ import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import net.sourceforge.jeval.Evaluator;
-import net.sourceforge.jeval.function.Function;
-import net.sourceforge.jeval.function.math.Sin;
-import net.sourceforge.jeval.function.string.Eval;
 
 public class MainActivity extends ActionBarActivity {
     private Button complex, del;
@@ -24,6 +20,11 @@ public class MainActivity extends ActionBarActivity {
     private Button b1, b2, b3, bminus;
     private Button bdot, b0, bequal, bplus;
     private TextView editText;
+
+    int flag = 0;
+    String no1 = "";
+    String no2 = "";
+    String op = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +41,15 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    Calc();
+                    if ( flag == 3 ) {
+                        Calc1();
+                    }
+                    if ( flag == 2 ) {
+                        editText.setText(editText.getText().toString().substring(0, editText.getText().toString().length() - 1));
+                        flag = 1;
+                        op = "";
+                        no2 = "";
+                    }
                 } catch(Exception eer1) {
                     reSetValue("");
                 }
@@ -185,9 +194,9 @@ public class MainActivity extends ActionBarActivity {
         bequal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //reSetValue(MathEval.calculate(editText.getText().toString()));
                 try {
-                    Calc();
+                    flag = 0;
+                    Calc1();
                 }catch(Exception eer1) {
                     reSetValue("Error");
                 }
@@ -232,31 +241,131 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
 
         editText.setText(MyData.appdata.toString());
+        flag = 1;
+        no1 = editText.getText().toString();
+        op = "";
+        no2 = "";
     }
 
     private void setValue(String v){
-        editText.setText( editText.getText() + v );
+        //editText.setText( editText.getText() + v );
+        int opflag = 0;
+        int showv = 0;
+
+        if ( v.equals("+") || v.equals("-") || v.equals("/") || v.equals("*") ) {
+            opflag = 1;
+        }
+
+        if ( (flag == 0 || flag == 1) && opflag == 0 ) {
+            flag = 1;
+            no1 = no1 + "" + v;
+            showv = 1;
+        }
+        if ( flag == 1 && opflag == 1 ) {
+            flag = 2;
+            if (v.equals("+")) {
+                op = "+";
+            }
+            if (v.equals("-")) {
+                op = "-";
+            }
+            if (v.equals("*")) {
+                op = "*";
+            }
+            if (v.equals("/")) {
+                op = "/";
+            }
+            showv = 1;
+        }
+        if ( (flag == 2 || flag == 3) && opflag == 0 ) {
+            flag = 3;
+            no2 = no2 + "" + v;
+            showv = 1;
+        }
+
+        if ( showv == 1 ) {
+            editText.setText( editText.getText() + v );
+        }
+        Log.d("soni", "setvalue[no1: " + no1 + ", op: " + op + ", no2: " + no2 + ", flag: " + flag + "]");
     }
 
     private void reSetValue(String v){
-        editText.setText( v );
+        editText.setText(v);
     }
 
     private void delValue(){
         if ( editText.getText() != null && editText.getText().toString().length() > 0 ) {
             if ( editText.getText().toString().length() > 1 ) {
-                editText.setText(editText.getText().toString().substring(0, editText.getText().toString().length()-1));
+                if ( editText.getText().toString().equalsIgnoreCase("error") ) {
+                    editText.setText("");
+                    flag = 0;
+                    no1 = "";
+                    no2 = "";
+                    op = "";
+                } else {
+
+                    editText.setText(editText.getText().toString().substring(0, editText.getText().toString().length() - 1));
+                    if ( flag == 1 ) {
+                        no1 = no1.substring(0, no1.length() - 1);
+                        if ( no1.trim().length() == 0 ) {
+                            flag = 0;
+                        }
+                    }
+                    if ( flag == 2 ) {
+                        flag = 1;
+                        op = "";
+                    }
+                    if ( flag == 3 ) {
+                        no2 = no2.substring(0, no2.length() - 1);
+
+                        if ( no2.trim().length() == 0 ) {
+                            flag = 2;
+                        }
+                    }
+                }
             } else {
                 editText.setText("");
+                flag = 0;
+                no1 = "";
+                no2 = "";
+                op = "";
             }
         }
+        Log.d("soni","delvalue[no1: "+no1+", op: " + op + ", no2: " + no2 + ", flag: " + flag +"]");
     }
 
-    private void Calc() throws Exception {
-        Evaluator ev = new Evaluator();
-        String rr = ev.evaluate(editText.getText().toString());
-        rr = rm0(rr);
-        reSetValue(rr);
+    private void Calc1() throws Exception {
+        double d1 = 0;
+        double d2 = 0;
+        double ans = 0;
+        String sans = "";
+        Log.d("soni","calc1[no1: "+no1+", op: " + op + ", no2: " + no2 + ", flag: " + flag +"]");
+
+        d1 = Double.valueOf(no1);
+        d2 = Double.valueOf(no2);
+        if ( op.equals("+") ) {
+            ans = d1 + d2;
+        }
+        if ( op.equals("-") ) {
+            ans = d1 - d2;
+        }
+        if ( op.equals("*") ) {
+            ans = d1 * d2;
+        }
+        if ( op.equals("/") ) {
+            ans = d1 / d2;
+        }
+
+        sans = String.valueOf(ans);
+
+        sans = rm0(sans);
+
+        reSetValue(sans);
+
+        flag = 1;
+        no1 = sans;
+        no2 = "";
+        op = "";
     }
 
     //If ends with ".0", remove ".0"
