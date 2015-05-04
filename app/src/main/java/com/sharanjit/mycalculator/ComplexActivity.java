@@ -1,6 +1,5 @@
 package com.sharanjit.mycalculator;
 
-import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -121,14 +120,23 @@ public class ComplexActivity extends ActionBarActivity {
             public void onClick(View v) {
             }
         });
-
-        sq = (Button)findViewById(R.id.bsin);
-        sin.setOnClickListener(new View.OnClickListener() {
+*/
+        sq = (Button)findViewById(R.id.bsq);
+        sq.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if ( editText.getText() != null && editText.getText().toString().length() > 0 ) {
+                    try {
+                        String rr = String.valueOf( Math.sqrt(Double.valueOf(editText.getText().toString())) );
+                        rr = setVals(rr);
+                        reSetValue(rr);
+                    }catch(Exception eer1) {
+                        reSetValue("0");
+                    }
+                }
             }
         });
-
+/*
         ob = (Button)findViewById(R.id.bsin);
         sin.setOnClickListener(new View.OnClickListener() {
             @Override
